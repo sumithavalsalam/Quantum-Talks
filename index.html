@@ -1,621 +1,464 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Computing: A Professional Introduction</title>
+    <title>Quantum Computing Seminar - Enhanced</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #4f46e5;
-            --secondary-color: #ec4899;
-            --background-light: #f3f4f6;
-            --background-dark: #111827;
-            --card-light: #ffffff;
-            --card-dark: #1f2937;
-            --text-light: #1f2937;
-            --text-dark: #e5e7eb;
-            --border-light: #e5e7eb;
-            --border-dark: #374151;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--background-light);
-            color: var(--text-light);
+            background-color: #f0f4f8; /* Light gray background */
         }
-        .dark body {
-            background-color: var(--background-dark);
-            color: var(--text-dark);
+        .section-content {
+            display: none; /* Hidden by default */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
-        
-        .section-container {
-            scroll-margin-top: 80px;
+        .section-content.active {
+            display: block; /* Show active section */
+            opacity: 1;
+            transform: translateY(0);
         }
-
-        .sidebar-link {
-            transition: all 0.2s ease-in-out;
-            border-left: 3px solid transparent;
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .sidebar-link:hover {
-            background-color: #e5e7eb;
-            border-left-color: var(--primary-color);
-            color: var(--primary-color);
-            transform: translateX(4px);
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Light track */
+            border-radius: 10px;
         }
-        .dark .sidebar-link:hover {
-            background-color: #374151;
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* Gray thumb */
+            border-radius: 10px;
         }
-        .sidebar-link.active {
-            background-color: #e5e7eb;
-            border-left-color: var(--primary-color);
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        .dark .sidebar-link.active {
-            background-color: #374151;
-            color: #a5b4fc;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Darker gray on hover */
         }
 
-        .card {
-            background-color: var(--card-light);
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
+        /* Qubit spin animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
-        .dark .card {
-            background-color: var(--card-dark);
-            border-color: var(--border-dark);
+        .qubit-spin {
+            animation: spin 2s linear infinite;
         }
-        .card:hover {
+
+        /* Bloch Sphere rotation placeholder */
+        .bloch-sphere-placeholder {
+            transform-style: preserve-3d;
+            animation: rotateY 10s linear infinite;
+        }
+        @keyframes rotateY {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* Measurement collapse effect */
+        .collapse-effect {
+            animation: collapse 0.8s ease-out forwards;
+        }
+        @keyframes collapse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Hover effect for concept boxes */
+        .concept-box:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
         }
-
-        /* Interactive Animations */
-        .spinning-coin {
-            width: 80px; height: 80px; border-radius: 50%;
-            position: relative; transform-style: preserve-3d;
-            animation: spin 3s infinite linear;
-            background-image: linear-gradient(to right, #6366f1, #8b5cf6);
-        }
-        @keyframes spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-
-        .entangled-orb-container { display: flex; justify-content: center; align-items: center; gap: 30px; cursor: pointer; }
-        .entangled-orb { width: 60px; height: 60px; border-radius: 50%; transition: background-color 0.2s ease; position: relative; }
-        .entangled-orb::after {
-            content: attr(data-state); position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 1.25rem;
-        }
-        
-        .interference-container { position: relative; width: 150px; height: 150px; margin: auto; }
-        .ripple {
-            position: absolute; border: 2px solid #38bdf8; border-radius: 50%;
-            animation: ripple-wave 2.5s infinite;
-        }
-        @keyframes ripple-wave {
-            0% { width: 0; height: 0; opacity: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-            100% { width: 100%; height: 100%; opacity: 0; top: 0; left: 0; }
-        }
-        .ripple:nth-child(2) { animation-delay: 0.5s; }
-        .ripple:nth-child(3) { animation-delay: 1s; }
     </style>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-python.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css">
 </head>
-<body class="bg-background-light dark:bg-background-dark">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-6 rounded-t-2xl shadow-lg">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">Quantum Computing Seminar</h1>
+            <p class="text-lg text-center opacity-90">A Simple Introduction and Its Promising Future</p>
+        </header>
 
-    <!-- Header -->
-    <header class="bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg sticky top-0 z-40 border-b border-border-light dark:border-border-dark">
-        <div class="container mx-auto px-4 lg:px-6 h-16 flex justify-between items-center">
-            <a href="#intro" class="text-xl font-bold text-primary-color">Quantum Future</a>
-            <div class="flex items-center space-x-2">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                    <i data-lucide="sun" class="block dark:hidden"></i><i data-lucide="moon" class="hidden dark:block"></i>
-                </button>
-                <button id="mobile-menu-button" class="lg:hidden p-2 rounded-md">
-                    <i data-lucide="menu"></i>
-                </button>
+        <!-- Navigation -->
+        <nav class="bg-gray-800 text-white p-4 overflow-x-auto whitespace-nowrap scrollbar-hide shadow-md">
+            <div class="flex justify-center space-x-2 md:space-x-4 text-sm md:text-base">
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="welcome">Welcome</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="classical-struggle">Classical Limits</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="what-is-qc">What is QC?</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="core-concepts">Core Concepts</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="how-qc-works">How QC Works</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="demo">Visual Demo</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="applications">Applications</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="challenges">Challenges</button>
+                <button class="nav-button p-2 px-3 rounded-xl bg-gray-700 hover:bg-blue-500 transition-all duration-300" data-section="qa">Q&A / Wrap-up</button>
             </div>
-        </div>
-    </header>
+        </nav>
 
-    <div class="container mx-auto px-4 lg:px-6 flex">
-        <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="hidden lg:block w-64 pt-8 pr-8 sticky top-16 h-[calc(100vh-4rem)]">
-            <nav id="desktop-nav" class="space-y-2">
-                <!-- Links will be injected here by JS -->
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="w-full lg:flex-1 py-8 lg:py-12">
-            
-            <!-- SECTION 1: Introduction -->
-            <section id="intro" class="section-container">
-                <div class="text-center p-8 md:p-12 rounded-lg bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1635070045099-654879a9ca74?q=80&w=2070&auto=format&fit=crop');">
-                    <div class="bg-black/60 p-8 rounded-lg">
-                        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">Quantum Computing</h1>
-                        <p class="text-xl md:text-2xl text-indigo-300 font-semibold mb-4">A Simple Introduction and Its Promising Future</p>
-                        <p class="text-lg text-gray-200">By Sumitha Valsalam, PhD Research Scholar</p>
-                        <p class="text-md text-gray-400">Kerala University of Digital Sciences, Innovation and Technology</p>
-                    </div>
-                </div>
-
-                <div class="mt-12">
-                    <h2 class="text-3xl font-bold mb-2">Introduction to Quantum Computing</h2>
-                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-6">Where did this idea come from?</h3>
-                    <p class="mb-8 text-lg leading-relaxed">The story of quantum computing begins not with computers, but with <strong>Quantum Physics</strong>: the revolutionary science that unveiled the strange, counter-intuitive rules governing our universe at the most microscopic scales. It was the groundbreaking work of pioneers in the early 20th century that laid the foundation for this new frontier.</p>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <!-- Pioneer Cards -->
-                         <div class="card p-4 text-center">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/Max_Planck_%281858-1947%29.jpg" alt="Max Planck" class="w-24 h-24 mx-auto rounded-full shadow-lg object-cover mb-3">
-                            <h4 class="font-bold text-lg">Max Planck</h4>
-                         </div>
-                          <div class="card p-4 text-center">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/Erwin_Schr%C3%B6dinger_%281933%29.jpg"class="w-24 h-24 mx-auto rounded-full shadow-lg object-cover mb-3">
-        
-
-
-
-                            <h4 class="font-bold text-lg">Erwin Schrödinger</h4>
-                         </div>
-                          <div class="card p-4 text-center">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/800px-Albert_Einstein_Head.jpg" alt="Albert Einstein" class="w-24 h-24 mx-auto rounded-full shadow-lg object-cover mb-3">
-                            <h4 class="font-bold text-lg">Albert Einstein</h4>
-                         </div>
-                          <div class="card p-4 text-center">
-                            <img src="https://upload.wikimedia.org/wikipedia/en/4/42/Richard_Feynman_Nobel.jpg" alt="Richard Feynman" class="w-24 h-24 mx-auto rounded-full shadow-lg object-cover mb-3">
-                            <h4 class="font-bold text-lg">Richard Feynman</h4>
-                         </div>
-                    </div>
-                     <p class="mt-8 text-lg leading-relaxed">Decades later, in the 1980s, physicist <strong>Richard Feynman</strong> posed a brilliant question. He noted that simulating quantum systems on classical computers was profoundly difficult. His insight: why not build a computer that itself operates on quantum principles? This was the conceptual birth of <strong>Quantum Computing</strong>—the harnessing of quantum mechanics to solve problems far beyond the reach of any classical supercomputer.</p>
-                </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-
-            <!-- SECTION 2: What is a quantum computer? -->
-            <section id="classical-vs-quantum" class="section-container">
-                <h2 class="text-3xl font-bold mb-6">What is a quantum computer?</h2>
-                <div class="grid md:grid-cols-2 gap-8 items-stretch">
-                    <div class="card p-6 flex flex-col items-center text-center">
-                        <i data-lucide="cpu" class="w-16 h-16 mb-4 text-blue-500"></i>
-                        <h3 class="text-2xl font-bold mb-3">Classical Computer</h3>
-                        <p class="flex-grow">A device that uses classical mechanics, manipulating voltages through circuits and gates. Information is stored in <strong>bits</strong>, which have a definite state of either 0 or 1.</p>
-                        <img src="https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?q=80&w=800" class="w-full h-48 object-cover mt-4 rounded-md">
-                    </div>
-                    <div class="card p-6 flex flex-col items-center text-center">
-                        <i data-lucide="atom" class="w-16 h-16 mb-4 text-primary-color"></i>
-                        <h3 class="text-2xl font-bold mb-3">Quantum Computer</h3>
-                        <p class="flex-grow">A device that leverages quantum mechanics to perform massively parallel computation. It uses phenomena like superposition and entanglement, storing information in <strong>qubits</strong>.</p>
-                        <img src="./chandelier-13.jpg" class="w-full h-48 object-cover mt-4 rounded-md">
-                    </div>
+        <!-- Main Content Area -->
+        <main class="p-6 md:p-8">
+            <!-- 1. Welcome + Icebreaker (5 min) -->
+            <section id="welcome" class="section-content active bg-blue-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Welcome to the Quantum World 🌌</h2>
+                <p class="text-gray-700 mb-4">Hello everyone! I'm thrilled to have you here today for a simple introduction to quantum computing. Don't worry, we're keeping it conceptual and fun!</p>
+                <p class="text-gray-700 mb-4">Let's start with a quick icebreaker: How many of you have heard of Schrödinger's Cat? 😼</p>
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <img src="https://placehold.co/400x200/ADD8E6/000000?text=Schrödinger's+Cat+Meme+%0A(Conceptual)" alt="Schrödinger's Cat Meme" class="w-full max-w-md rounded-lg shadow-md border border-blue-200">
+                    <p class="text-gray-600 text-sm italic text-center">A fun way to introduce the strange world of quantum mechanics!</p>
                 </div>
             </section>
 
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-
-            <!-- SECTION 3: Why Now? -->
-            <section id="why-now" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">Why Learn About Quantum Computing?</h2>
-                 <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-4">Moore's Law & The Future of Computers</h3>
-                 <div class="grid md:grid-cols-2 gap-8 items-center">
-                     <div>
-                         <p class="text-lg leading-relaxed mb-4">For decades, the power of classical computers has grown exponentially, an observation known as <strong>Moore's Law</strong>. However, this progress is slowing as we reach the physical limits of silicon. Transistors are now so small that quantum effects—once a nuisance—are becoming the main feature.</p>
-                         <div class="bg-indigo-100 dark:bg-indigo-900/50 p-4 rounded-lg border-l-4 border-indigo-500">
-                             <p class="font-semibold italic">"There's Plenty of Room at the Bottom."</p>
-                             <p class="text-sm text-right">- Richard Feynman, 1959</p>
-                         </div>
-                         <p class="text-lg leading-relaxed mt-4">Feynman foresaw that this microscopic realm would unlock a new paradigm of computation, one that we are just beginning to explore.</p>
-                     </div>
-                     <div class="card p-4">
-                         <canvas id="mooresLawChart"></canvas>
-                     </div>
-                 </div>
-                 
-                 <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mt-12 mb-4">What does a quantum computer look like?</h3>
-                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div class="card p-4">
-                        <img src="https://www.research.ibm.com/blog/wp-content/uploads/2019/01/system-one-7-1.jpg" alt="IBM Quantum Computer" class="rounded-md aspect-video object-cover mb-3">
-                        <h4 class="font-bold">IBM's Superconducting System</h4>
-                        <p class="text-sm">Uses superconducting circuits cooled to near absolute zero.</p>
+            <!-- 2. Why Classical Computers Struggle (10 min) -->
+            <section id="classical-struggle" class="section-content bg-green-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-green-800 mb-4">Why Do We Need Quantum Computing?</h2>
+                <p class="text-gray-700 mb-4">Let's start with what we know: Classical computers, like your laptop or phone, work with 'bits'. A bit is like a light switch – it's either ON (1) or OFF (0). Or, think of it as a coin that's either Heads or Tails.</p>
+                <div class="flex items-center justify-center mb-4 space-x-6">
+                    <div class="flex flex-col items-center transition-transform hover:scale-105 duration-300">
+                        <div class="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-4xl text-gray-800 font-bold shadow-inner">0</div>
+                        <p class="mt-2 text-md text-gray-600">Off / Tails</p>
                     </div>
-                    <div class="card p-4">
-                         <img src="https://c1.staticflickr.com/5/4845/45634351984_1ebf5193d5_b.jpg" alt="Chinese Photon-based quantum computer" class="rounded-md aspect-video object-cover mb-3">
-                         <h4 class="font-bold">Photon-based Systems</h4>
-                        <p class="text-sm">Manipulates individual photons (particles of light) to carry quantum information.</p>
+                    <div class="flex flex-col items-center transition-transform hover:scale-105 duration-300">
+                        <div class="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center text-4xl text-white font-bold shadow-inner">1</div>
+                        <p class="mt-2 text-md text-gray-600">On / Heads</p>
                     </div>
-                     <div class="card p-4">
-                        <img src="https://www.ionq.com/hubfs/35-qubit-barium-computer.jpeg" alt="IonQ Device" class="rounded-md aspect-video object-cover mb-3">
-                        <h4 class="font-bold">IonQ's Trapped-Ion System</h4>
-                        <p class="text-sm">Uses lasers to suspend and control individual ions as qubits.</p>
-                    </div>
-                 </div>
+                </div>
+                <p class="text-gray-700 mb-4">While classical computers are amazing for many tasks, they struggle with problems that involve an immense number of possibilities. These are problems that would take even the fastest supercomputer billions of years to solve!</p>
+                <h3 class="text-xl font-medium text-gray-800 mb-2">Hard Problems for Classical Computers:</h3>
+                <ul class="list-disc list-inside text-gray-700 mb-4 pl-4">
+                    <li><strong>Accurate Weather Prediction:</strong> Modeling complex atmospheric interactions.</li>
+                    <li><strong>Drug Discovery:</strong> Simulating how molecules interact to find new medicines.</li>
+                    <li><strong>Factoring Huge Numbers:</strong> The basis of modern encryption (e.g., RSA).</li>
+                    <li><strong>Optimizing Complex Systems:</strong> Like global logistics or financial markets.</li>
+                </ul>
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <img src="https://placehold.co/500x250/C8E6C9/000000?text=Classical+vs.+Quantum+Capability%0A(Conceptual+Growth+Chart)" alt="Classical vs Quantum Capability Chart" class="w-full max-w-lg rounded-lg shadow-md border border-green-200">
+                    <p class="text-gray-600 text-center text-sm italic">Imagine a problem where every new variable doubles the complexity. Classical computers quickly hit a wall, while quantum computers have the potential to scale exponentially.</p>
+                </div>
             </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
 
-            <!-- SECTION 4: The Quantum Advantage -->
-            <section id="qubits" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">The Quantum Advantage</h2>
-                 <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-4">Adding qubits increases power exponentially</h3>
-                <div class="grid md:grid-cols-2 gap-8 items-center">
-                    <p class="text-lg leading-relaxed">The true power of quantum computers lies in their exponential scaling. While doubling the power of a classical computer requires doubling its bits, a quantum computer doubles its computational space with every single qubit added. A 64-qubit quantum computer can process 2<sup>64</sup> (18 quintillion) values simultaneously.</p>
-                    <div class="card p-6 text-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                        <h4 class="text-2xl font-bold mb-2">Exponential Growth</h4>
-                        <p><strong class="text-yellow-300">32 bits → 64 bits</strong> = 2x Classical Power</p>
-                        <p><strong class="text-yellow-300">32 qubits → 33 qubits</strong> = 2x Quantum Power</p>
+            <!-- 3. What Is Quantum Computing? (15 min) -->
+            <section id="what-is-qc" class="section-content bg-purple-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-purple-800 mb-4">Bits vs Qubits – A New Logic</h2>
+                <p class="text-gray-700 mb-4">Quantum computing isn't just about making faster classical computers. It's about using the mind-bending laws of quantum mechanics to solve a different class of problems, much more efficiently.</p>
+                <h3 class="text-xl font-medium text-gray-800 mb-2">Introducing the Qubit:</h3>
+                <p class="text-gray-700 mb-4">While a classical bit is either 0 or 1, a <strong>qubit</strong> (quantum bit) can be 0, 1, or both at the same time! Think of our coin analogy: a quantum coin isn't just heads or tails, it can be spinning in the air, representing both possibilities simultaneously.</p>
+                <div class="flex items-center justify-center mb-4 space-x-6">
+                    <div class="flex flex-col items-center">
+                        <div class="w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full flex items-center justify-center text-6xl text-white shadow-lg relative overflow-hidden qubit-spin">
+                            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">🌀</span>
+                        </div>
+                        <p class="mt-2 text-md font-semibold text-gray-600">Qubit (Spinning)</p>
+                    </div>
+                    <div class="text-4xl text-gray-500 font-bold">=</div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-yellow-300 rounded-full flex items-center justify-center text-3xl shadow-inner">0</div>
+                        <p class="mt-2 text-sm text-gray-600">and</p>
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-3xl text-white shadow-inner">1</div>
                     </div>
                 </div>
 
-                <h3 class="text-2xl font-bold mt-12 mb-6 text-center">Key Concepts Simplified</h3>
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="card p-6 text-center">
-                        <h4 class="text-xl font-bold mb-3">Superposition</h4>
-                        <p class="text-sm mb-4">One thing being in many states at once.</p>
-                        <div class="flex justify-center items-center h-24"><div class="spinning-coin"></div></div>
-                    </div>
-                    <div class="card p-6 text-center">
-                        <h4 class="text-xl font-bold mb-3">Entanglement</h4>
-                        <p class="text-sm mb-4">Two things linked, instantly affecting each other.</p>
-                        <div id="entanglement-demo" class="flex justify-center items-center h-24 entangled-orb-container">
-                           <div class="entangled-orb" data-state="|0⟩"></div><div class="entangled-orb" data-state="|1⟩"></div>
+                <h3 class="text-xl font-medium text-gray-800 mb-2">The Magic of Quantum Mechanics:</h3>
+                <ul class="list-disc list-inside text-gray-700 mb-4 pl-4">
+                    <li>
+                        <strong>Superposition:</strong> This is the spinning coin. A qubit can exist in a combination of states (0 and 1) simultaneously. It's like exploring multiple paths at once!
+                        <p class="text-sm italic mt-1 text-gray-600">"Superposition allows quantum computers to process a vast amount of information in parallel, like trying all solutions at once."</p>
+                    </li>
+                    <li>
+                        <strong>Entanglement:</strong> This is "spooky action at a distance." When two qubits become entangled, they are linked in a special way. Measuring one instantaneously affects the state of the other, no matter how far apart they are.
+                        <p class="text-sm italic mt-1 text-gray-600">"Entanglement creates powerful correlations that classical computers cannot replicate, enabling complex calculations."</p>
+                    </li>
+                </ul>
+                <p class="text-gray-700 font-semibold mt-6 p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-500">
+                    Important: Quantum computers don’t replace classical ones. They solve a different, highly complex class of problems better.
+                </p>
+            </section>
+
+            <!-- 4. Core Concepts Made Simple (25 min) -->
+            <section id="core-concepts" class="section-content bg-red-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-red-800 mb-4">Core Concepts Made Simple</h2>
+                <p class="text-gray-700 mb-4">Let's dive a little deeper into these concepts with some simple analogies and visuals.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Concept: Superposition -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-red-700 mb-2">Superposition</h3>
+                        <p class="text-gray-700 mb-3">Imagine a coin spinning in the air. Until it lands, it's neither heads nor tails, but a combination of both possibilities. That's a qubit in superposition – it's 0 AND 1 at the same time.</p>
+                        <div class="flex items-center justify-center h-20 text-6xl">
+                            <span class="qubit-spin">🪙</span>
                         </div>
                     </div>
-                    <div class="card p-6 text-center">
-                        <h4 class="text-xl font-bold mb-3">Interference</h4>
-                        <p class="text-sm mb-4">Canceling wrong answers, amplifying right ones.</p>
-                        <div class="flex justify-center items-center h-24">
-                           <div class="interference-container"><div class="ripple"></div><div class="ripple"></div><div class="ripple"></div></div>
+
+                    <!-- Concept: Entanglement -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-red-700 mb-2">Entanglement</h3>
+                        <p class="text-gray-700 mb-3">Think of two identical twins, even if they're far apart. If one twin feels a pinch, the other instantly feels something too. Their fates are linked, no matter the distance. Similarly, entangled qubits are correlated instantly.</p>
+                        <div class="flex items-center justify-center h-20 text-6xl">
+                            👯‍♀️🔗
+                        </div>
+                    </div>
+
+                    <!-- Concept: Measurement -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-red-700 mb-2">Measurement</h3>
+                        <p class="text-gray-700 mb-3">When you stop the spinning coin, it collapses into either heads or tails. Similarly, when you "measure" a qubit, its superposition collapses, and you get a definite 0 or 1 outcome. This is the only time you see a classical result.</p>
+                        <div class="flex items-center justify-center h-20 text-6xl">
+                            <span class="collapse-effect">👁️</span>➡️0️⃣ or 1️⃣
+                        </div>
+                    </div>
+
+                    <!-- Concept: Quantum Gates -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-red-700 mb-2">Quantum Gates</h3>
+                        <p class="text-gray-700 mb-3">Just like classical computers use logic gates (AND, OR, NOT), quantum computers use quantum gates. These aren't simple on/off switches; they manipulate the quantum state of qubits, rotating them on a conceptual sphere called the Bloch Sphere.</p>
+                        <div class="flex flex-col items-center justify-center h-20">
+                            <img src="https://placehold.co/100x100/FCA5A5/000000?text=Bloch%0ASphere%0A(Conceptual)" alt="Bloch Sphere" class="bloch-sphere-placeholder rounded-full shadow-inner">
+                            <span class="text-sm mt-2 text-gray-500">(Think of 3D rotations)</span>
+                        </div>
+                    </div>
+
+                    <!-- Concept: Quantum Circuit -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-red-700 mb-2">Quantum Circuit</h3>
+                        <p class="text-gray-700 mb-3">A quantum algorithm is built as a sequence of these quantum gates applied to qubits, much like steps in a recipe. This sequence is called a quantum circuit, and it directs how the qubits interact to solve a problem.</p>
+                        <div class="flex items-center justify-center h-20 text-6xl">
+                            〰️➡️⚙️➡️⚙️➡️〰️
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <h3 class="text-2xl font-bold mt-12 mb-6">How is Information Stored? The Qubit</h3>
-                <div class="grid md:grid-cols-2 gap-8 items-center">
-                     <div>
-                        <p class="text-lg leading-relaxed mb-4">The qubit is the fundamental unit of quantum information. While a classical bit is a simple switch (0 or 1), a qubit can be |0⟩, |1⟩, or a combination of both. We visualize this state on the <strong>Bloch Sphere</strong>, where any point on the surface represents a valid qubit state.</p>
-                        <div class="card p-4 font-mono text-center text-lg bg-gray-100 dark:bg-gray-800">
-                            $|\Psi\rangle = \alpha|0\rangle + \beta|1\rangle$
+            <!-- 5. How Quantum Computers Work (10 min) -->
+            <section id="how-qc-works" class="section-content bg-yellow-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-yellow-800 mb-4">Inside a Quantum Computer</h2>
+                <p class="text-gray-700 mb-4">So, what do these incredible machines actually look like, and how do they work?</p>
+
+                <h3 class="text-xl font-medium text-gray-800 mb-2">The Hardware:</h3>
+                <ul class="list-disc list-inside text-gray-700 mb-4 pl-4">
+                    <li><strong>Superconducting Qubits:</strong> These are tiny circuits cooled to extremely low temperatures (colder than outer space!) to achieve quantum effects. Used by IBM and Google.</li>
+                    <li><strong>Trapped Ions:</strong> Individual atoms are suspended and manipulated using lasers. Used by companies like IonQ.</li>
+                </ul>
+                <div class="flex flex-col md:flex-row items-center justify-around space-y-4 md:space-y-0 md:space-x-8 mb-6">
+                    <div class="bg-gray-200 rounded-lg p-4 flex flex-col items-center justify-center text-gray-500 text-sm w-full md:w-1/2 shadow-inner">
+                        <img src="https://placehold.co/200x150/FFEFD5/000000?text=Superconducting%0AQubit+Cryostat%0A(Conceptual)" alt="Superconducting Qubit Cryostat" class="w-full h-auto mb-2 rounded-md">
+                        <p>Conceptual View: IBM Quantum System One Cryostat</p>
+                    </div>
+                    <div class="bg-gray-200 rounded-lg p-4 flex flex-col items-center justify-center text-gray-500 text-sm w-full md:w-1/2 shadow-inner">
+                        <img src="https://placehold.co/200x150/FFFACD/000000?text=Trapped+Ion%0AQuantum+Computer%0A(Conceptual)" alt="Trapped Ion Quantum Computer" class="w-full h-auto mb-2 rounded-md">
+                        <p>Conceptual View: Trapped Ion Chamber</p>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-medium text-gray-800 mb-2">Challenges:</h3>
+                <ul class="list-disc list-inside text-gray-700 mb-4 pl-4">
+                    <li><strong>Decoherence:</strong> Qubits are very fragile! They lose their quantum properties (superposition, entanglement) if disturbed by their environment, much like a spinning coin falls flat.</li>
+                    <li><strong>Quantum Noise:</strong> Errors can easily creep into quantum computations.</li>
+                    <li><strong>Error Correction:</strong> Researchers are developing complex methods to protect qubits from errors, but it's a huge challenge.</li>
+                </ul>
+                <p class="text-gray-700 text-center italic mt-4">
+                    Despite these challenges, incredible progress is being made, moving us closer to fault-tolerant quantum computers!
+                </p>
+            </section>
+
+            <!-- 6. Live Demo / Visual Simulation (10 min) -->
+            <section id="demo" class="section-content bg-orange-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-orange-800 mb-4">A Live Peek into Quantum Circuits</h2>
+                <p class="text-gray-700 mb-4">While we can't run a live quantum computer here, let's conceptualize what a basic demonstration would look like using tools like IBM Quantum Lab or Qiskit simulator.</p>
+
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-orange-200 mb-4 concept-box transition-all duration-300">
+                    <h3 class="text-xl font-semibold text-orange-700 mb-2">Basic Quantum Circuit: Hadamard Gate</h3>
+                    <p class="text-gray-700 mb-3">Imagine a single qubit starting in the '0' state. We apply a <strong>Hadamard gate</strong> (H) to it. This puts the qubit into a perfect superposition – 50% chance of being 0 and 50% chance of being 1 when measured.</p>
+                    <div class="flex items-center justify-center h-16 text-5xl relative">
+                        <span class="text-gray-500">|0⟩</span>
+                        <span class="text-3xl font-bold px-3 py-1 rounded-full bg-orange-200 text-orange-800 mx-4 shadow-md">H</span>
+                        <div class="flex items-center">
+                            <span id="hadamard-output" class="text-gray-500 collapse-effect">?</span>
+                            <button onclick="simulateHadamard()" class="ml-4 p-2 bg-orange-500 text-white rounded-full text-base shadow-lg hover:bg-orange-600 transition-colors duration-200">Measure</button>
                         </div>
-                         <p class="mt-4 text-sm">Where $\alpha$ and $\beta$ are probability amplitudes, and $|\alpha|^2 + |\beta|^2 = 1$.</p>
                     </div>
-                    <div>
-                         <img src=<iframe src="https://javafxpert.github.io/grok-bloch/" width="100%" height="300px" frameborder="0"></iframe>
+                    <p class="text-gray-600 text-sm mt-2 text-center">Click 'Measure' to see a random outcome (0 or 1).</p>
+                </div>
 
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-orange-200 mb-4 concept-box transition-all duration-300">
+                    <h3 class="text-xl font-semibold text-orange-700 mb-2">Bell State Circuit: Creating Entanglement</h3>
+                    <p class="text-gray-700 mb-3">This is a classic circuit to demonstrate entanglement. We start with two qubits, both in the '0' state. We apply a Hadamard gate to the first qubit, and then a CNOT (Controlled-NOT) gate between the two. This creates an entangled pair.</p>
+                    <div class="flex flex-col items-center justify-center text-center text-5xl">
+                        <div class="flex items-center mb-2">
+                            <span class="text-gray-500 mr-2">|0⟩</span> <span class="text-2xl font-bold px-2 py-1 rounded bg-orange-200 text-orange-800 mr-2 shadow-md">H</span>
+                            <img src="https://placehold.co/100x20/FDBA74/000000?text=____" alt="line" class="inline-block align-middle">
+                            <span class="text-gray-500 ml-2">Qubit 1</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2">|0⟩</span> <span class="text-2xl font-bold px-2 py-1 rounded bg-orange-200 text-orange-800 mr-2 shadow-md">CNOT</span>
+                            <img src="https://placehold.co/100x20/FDBA74/000000?text=____" alt="line" class="inline-block align-middle">
+                            <span class="text-gray-500 ml-2">Qubit 2</span>
+                        </div>
+                        <p class="mt-4 text-gray-600 text-sm">
+                            If we measure the first qubit as 0, the second will also be 0. If the first is 1, the second will be 1, every time! Their fates are always linked.
+                        </p>
                     </div>
                 </div>
 
-                 <h3 class="text-2xl font-bold mt-12 mb-6">Classical Bit vs. Quantum Bit</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b-2 border-border-light dark:border-border-dark">
-                                <th class="p-3 text-lg font-semibold text-blue-600 dark:text-blue-400">Classical Bits</th>
-                                <th class="p-3 text-lg font-semibold text-primary-color">Quantum Bits</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-b border-border-light dark:border-border-dark">
-                                <td class="p-3">Definite state: 0 or 1</td>
-                                <td class="p-3">Superposition state: $\alpha|0\rangle + \beta|1\rangle$</td>
-                            </tr>
-                            <tr class="border-b border-border-light dark:border-border-dark">
-                                <td class="p-3">Unchanged by measurement</td>
-                                <td class="p-3">State collapses upon measurement</td>
-                            </tr>
-                             <tr class="border-b border-border-light dark:border-border-dark">
-                                <td class="p-3">Can be perfectly copied</td>
-                                <td class="p-3">Cannot be copied (No-Cloning Theorem)</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <p class="text-gray-700 mt-4 italic text-center">
+                    This shows the power of quantum mechanics: you're not just getting random outcomes, but outcomes that are correlated in a way classical computers can't replicate efficiently.
+                </p>
+            </section>
+
+            <!-- 7. Applications & Promising Future (10 min) -->
+            <section id="applications" class="section-content bg-teal-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-teal-800 mb-4">Quantum in Real Life: Applications</h2>
+                <p class="text-gray-700 mb-4">Where will quantum computing make the biggest difference? It's not about email faster, but about solving problems currently impossible.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-teal-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-teal-700 mb-2 flex items-center"><span class="text-4xl mr-2">🔒</span> Cryptography</h3>
+                        <p class="text-gray-700">Quantum computers could break current encryption methods (like RSA), impacting online security. This is driving research into "Post-Quantum Cryptography."</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-teal-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-teal-700 mb-2 flex items-center"><span class="text-4xl mr-2">💊</span> Drug Discovery & Material Science</h3>
+                        <p class="text-gray-700">Simulating molecules and materials with unprecedented accuracy to discover new drugs (e.g., penicillin) or revolutionary materials (e.g., room-temperature superconductors).</p>
+                        <img src="https://placehold.co/150x80/CCFBF1/000000?text=Molecule%0ASimulation" alt="Molecule Simulation" class="mt-3 rounded-md w-full max-w-[150px] mx-auto opacity-75">
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-teal-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-teal-700 mb-2 flex items-center"><span class="text-4xl mr-2">📈</span> Finance</h3>
+                        <p class="text-gray-700">Optimizing complex financial portfolios, risk analysis, and even detecting fraud more efficiently.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-teal-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-teal-700 mb-2 flex items-center"><span class="text-4xl mr-2">🚚</span> Logistics & Optimization</h3>
+                        <p class="text-gray-700">Finding the most efficient routes for delivery services (like FedEx) or optimizing supply chains globally.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-teal-200 col-span-1 md:col-span-2 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-teal-700 mb-2 flex items-center"><span class="text-4xl mr-2">🧠</span> AI + Quantum (QML)</h3>
+                        <p class="text-gray-700">Quantum Machine Learning could significantly speed up complex machine learning models, leading to breakthroughs in artificial intelligence.</p>
+                        <img src="https://placehold.co/300x100/6EE7B7/000000?text=AI+Learning+Boost%0A(Conceptual)" alt="AI Learning Boost" class="mt-3 rounded-md w-full max-w-[300px] mx-auto opacity-75">
+                    </div>
                 </div>
             </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
 
-            <!-- Remaining sections will follow this improved structure. -->
-            <section id="gates" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">Quantum Gates</h2>
-                 <p class="text-lg leading-relaxed mb-8">Quantum gates are the building blocks of quantum circuits. They are reversible operations that manipulate qubits by rotating their state on the Bloch Sphere. These are represented by unitary matrices.</p>
-                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="card p-6">
-                        <h4 class="font-bold text-xl mb-2">Pauli-X (NOT)</h4>
-                        <p class="text-sm mb-4">Flips the qubit state. |0⟩ ↔ |1⟩.</p>
-                        <img src="https://qiskit.org/documentation/_images/pauli-x.gif" alt="Pauli-X Gate" class="mx-auto h-24 bg-white rounded-md p-2">
-                    </div>
-                     <div class="card p-6">
-                        <h4 class="font-bold text-xl mb-2">Hadamard (H)</h4>
-                        <p class="text-sm mb-4">Creates an equal superposition.</p>
-                        <img src="https://qiskit.org/documentation/_images/hadamard-bloch.gif" alt="Hadamard Gate" class="mx-auto h-24 bg-white rounded-md p-2">
-                    </div>
-                     <div class="card p-6">
-                        <h4 class="font-bold text-xl mb-2">Pauli-Z (Z)</h4>
-                        <p class="text-sm mb-4">Applies a phase shift to |1⟩.</p>
-                        <img src="https://qiskit.org/documentation/_images/pauli-z.gif" alt="Pauli-Z Gate" class="mx-auto h-24 bg-white rounded-md p-2">
-                    </div>
-                     <div class="card p-6 col-span-1 md:col-span-2 lg:col-span-3">
-                         <div class="grid md:grid-cols-2 gap-6 items-center">
-                            <div>
-                                <h4 class="font-bold text-xl mb-2">Controlled-NOT (CNOT)</h4>
-                                <p>A 2-qubit gate essential for creating entanglement. It flips the <strong>target</strong> qubit if and only if the <strong>control</strong> qubit is |1⟩.</p>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/CNOT_gate_animation.gif/220px-CNOT_gate_animation.gif" alt="CNOT Gate Animation" class="mx-auto h-24 bg-white p-2 rounded">
-                         </div>
-                    </div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
+            <!-- 8. Challenges & Ethical Concerns (5 min) -->
+            <section id="challenges" class="section-content bg-gray-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">What’s Stopping Us? Challenges & Ethics</h2>
+                <p class="text-gray-700 mb-4">While the future of quantum computing is bright, it's important to acknowledge the significant hurdles and ethical considerations.</p>
 
-            <section id="circuits" class="section-container">
-                <h2 class="text-3xl font-bold mb-6">Quantum Circuits & Algorithms</h2>
-                 <div class="grid md:grid-cols-2 gap-8 items-center">
-                    <div>
-                         <h3 class="text-xl font-semibold mb-3">Quantum Circuit</h3>
-                         <p class="text-lg leading-relaxed">A quantum circuit models a computation as a sequence of quantum gates applied to qubits. Time flows from left to right, showing how the qubits' states evolve.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Challenges -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 flex items-center"><span class="text-4xl mr-2">🚧</span> Current Challenges:</h3>
+                        <ul class="list-disc list-inside text-gray-700 pl-4">
+                            <li><strong>Fragile Qubits:</strong> Maintaining quantum states is incredibly difficult and requires extreme isolation.</li>
+                            <li><strong>Limited Scalability:</strong> Building quantum computers with many stable qubits is a massive engineering feat.</li>
+                            <li><strong>High Cost:</strong> The technology is incredibly expensive to research, build, and operate.</li>
+                            <li><strong>Quantum Algorithms:</strong> We still need to develop more powerful and robust quantum algorithms to fully utilize the hardware.</li>
+                        </ul>
                     </div>
-                     <div class="card p-4 bg-white">
-                        <img src="https://qiskit.org/documentation/_images/circuit-diagram.png" alt="Quantum Circuit Diagram" class="rounded-md mx-auto">
-                    </div>
-                 </div>
 
-                 <h3 class="text-2xl font-bold mt-12 mb-6">Famous Quantum Algorithms</h3>
-                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="card p-6 bg-blue-50 dark:bg-blue-900/30 border-blue-500">
-                        <h4 class="font-bold text-xl mb-2 text-blue-800 dark:text-blue-300">Shor's Algorithm</h4>
-                        <p>Finds prime factors of large numbers exponentially faster than classical computers. Poses a major threat to modern encryption like RSA.</p>
+                    <!-- Ethical Concerns -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 concept-box transition-all duration-300">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 flex items-center"><span class="text-4xl mr-2">⚖️</span> Ethical Concerns:</h3>
+                        <ul class="list-disc list-inside text-gray-700 pl-4">
+                            <li><strong>Encryption Breaking:</strong> The ability to break current cryptographic standards poses a major security risk if not managed with new "post-quantum" solutions.</li>
+                            <li><strong>AI Misuse:</strong> Combining quantum power with advanced AI could lead to unprecedented capabilities, raising questions about control and responsible use.</li>
+                            <li><strong>Digital Divide:</strong> Will access to powerful quantum resources be limited, creating a new form of technological inequality?</li>
+                        </ul>
                     </div>
-                    <div class="card p-6 bg-green-50 dark:bg-green-900/30 border-green-500">
-                        <h4 class="font-bold text-xl mb-2 text-green-800 dark:text-green-300">Grover's Algorithm</h4>
-                        <p>Searches an unsorted database quadratically faster. Finds an item in $\sqrt{N}$ steps instead of N/2, revolutionizing search problems.</p>
-                    </div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-
-            <section id="programming" class="section-container">
-                <h2 class="text-3xl font-bold mb-6">Quantum Programming</h2>
-                 <p class="text-lg leading-relaxed mb-8">Quantum programming languages and frameworks act as a bridge, allowing us to design quantum circuits and algorithms in a high-level language like Python, and then run them on simulators or real quantum hardware.</p>
-                 
-                 <div class="card p-2">
-                 <pre><code class="language-python">
-# "Hello, World!" in Qiskit: Creating an Entangled Bell State
-from qiskit import QuantumCircuit, execute, Aer
-
-# Create a 2-qubit quantum circuit
-qc = QuantumCircuit(2, 2)
-
-# 1. Apply a Hadamard gate to qubit 0 to create superposition
-qc.h(0)
-
-# 2. Apply a CNOT gate to entangle qubit 0 and qubit 1
-qc.cx(0, 1)
-
-# 3. Measure the qubits
-qc.measure([0,1], [0,1])
-
-# Execute on a simulator and print the results
-simulator = Aer.get_backend('qasm_simulator')
-result = execute(qc, simulator, shots=1024).result()
-counts = result.get_counts(qc)
-print(counts)
-# Expected output: {'00': ~512, '11': ~512}
-                 </code></pre>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-
-            <section id="applications" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">Applications and the Future</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card p-6"><i data-lucide="key-round" class="w-10 h-10 mb-3 text-red-500"></i><h4 class="text-xl font-bold">Cryptography</h4><p>Breaking current encryption standards and creating new, quantum-safe ones.</p></div>
-                    <div class="card p-6"><i data-lucide="flask-conical" class="w-10 h-10 mb-3 text-green-500"></i><h4 class="text-xl font-bold">Drug Discovery & Materials</h4><p>Simulating molecules to design new medicines and novel materials.</p></div>
-                    <div class="card p-6"><i data-lucide="brain-circuit" class="w-10 h-10 mb-3 text-blue-500"></i><h4 class="text-xl font-bold">Artificial Intelligence</h4><p>Enhancing machine learning for complex pattern recognition and data analysis.</p></div>
-                    <div class="card p-6"><i data-lucide="area-chart" class="w-10 h-10 mb-3 text-yellow-500"></i><h4 class="text-xl font-bold">Complex Optimization</h4><p>Solving logistical problems in finance, shipping, and travel.</p></div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-            
-            <section id="post-quantum" class="section-container">
-                <h2 class="text-3xl font-bold mb-6">Case Study: Quantum Cryptography</h2>
-                 <div class="grid md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h3 class="text-xl font-semibold mb-3">The Post-Quantum World</h3>
-                        <p class="text-lg leading-relaxed mb-4">Experts predict that quantum computers could break today's standard encryption (RSA-2048) within a decade. This threat is driving a global race to develop and deploy "quantum-resistant" algorithms.</p>
-                         <h3 class="text-xl font-semibold mt-6 mb-3">Neven's Law</h3>
-                         <p>Google's Hartmut Neven suggests quantum computing power grows at a "doubly-exponential" rate, far faster than Moore's Law, accelerating the timeline for this threat.</p>
-                    </div>
-                     <div class="card p-4">
-                         <canvas id="nevensLawChart"></canvas>
-                     </div>
-                 </div>
-
-                 <h3 class="text-2xl font-bold mt-12 mb-6">Solution: Quantum Key Distribution (QKD)</h3>
-                  <div class="grid md:grid-cols-2 gap-8 items-center">
-                     <div>
-                         <p class="text-lg leading-relaxed mb-4">QKD offers a physically secure way to exchange encryption keys. It relies on a core principle of quantum mechanics: the act of observing a quantum system disturbs it. If an eavesdropper ("Eve") tries to intercept the key, her measurement alters the qubits, and her presence is immediately detected by the legitimate users ("Alice" and "Bob").</p>
-                    </div>
-                     <div class="card p-4 bg-white">
-                        <img src="https://www.mdpi.com/sensors/sensors-19-02667/article_deploy/html/images/sensors-19-02667-g001.png" alt="QKD Diagram with Alice, Bob, and Eve" class="rounded-lg mx-auto">
-                    </div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-            
-            <section id="challenges" class="section-container">
-                <h2 class="text-3xl font-bold mb-6">Problems with Quantum Computers</h2>
-                 <div class="space-y-6">
-                    <div class="card p-6 border-l-4 border-red-500">
-                        <h3 class="font-bold text-xl text-red-700 dark:text-red-400 mb-2">Decoherence: The #1 Enemy</h3>
-                        <p>Qubits are incredibly fragile. Any interaction with their environment—heat, vibration, stray fields—can cause them to lose their quantum state, destroying the computation. This is the biggest engineering hurdle.</p>
-                    </div>
-                    <div class="card p-6 border-l-4 border-yellow-500">
-                        <h3 class="font-bold text-xl text-yellow-700 dark:text-yellow-400 mb-2">Error Correction</h3>
-                        <p>Due to decoherence, robust error correction is essential. This requires bundling many noisy physical qubits into one stable "logical qubit," a process with massive overhead.</p>
-                    </div>
-                    <div class="card p-6 border-l-4 border-blue-500">
-                        <h3 class="font-bold text-xl text-blue-700 dark:text-blue-400 mb-2">The NISQ Era</h3>
-                        <p>We are currently in the <strong>Noisy Intermediate-Scale Quantum (NISQ)</strong> era. Our computers are too "noisy" for full error correction and have too few qubits for large algorithms, but they are powerful enough for valuable research and solving specific, smaller problems.</p>
-                    </div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-            
-            <section id="careers" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">Quantum Careers Ahead</h2>
-                 <p class="text-lg leading-relaxed mb-8">This rapidly growing field needs talent from diverse backgrounds—not just physics. Opportunities abound in software, hardware, AI, and security.</p>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card p-6"><h4 class="text-xl font-bold">Research</h4><p class="text-sm">Fundamental work in physics, CS, and math.</p></div>
-                    <div class="card p-6"><h4 class="text-xl font-bold">Software Engineering</h4><p class="text-sm">Building compilers, libraries, and control software.</p></div>
-                    <div class="card p-6"><h4 class="text-xl font-bold">Cryptography</h4><p class="text-sm">Creating the next generation of quantum-safe algorithms.</p></div>
-                    <div class="card p-6"><h4 class="text-xl font-bold">Quantum AI/ML</h4><p class="text-sm">Applying quantum principles to enhance machine learning.</p></div>
-                 </div>
-            </section>
-            
-            <div class="my-16 border-t border-border-light dark:border-border-dark"></div>
-            
-            <section id="references" class="section-container">
-                 <h2 class="text-3xl font-bold mb-6">References</h2>
-                 <div class="card p-6">
-                     <ul class="list-disc list-inside text-sm space-y-2 break-all">
-                        <li><a href="https://en.wikipedia.org/wiki/Talk:Quantum_computing/Further_Reading" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Wikipedia: Further Reading</a></li>
-                        <li><a href="https://www.fonow.com/view/267479.html" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Fonow View</a></li>
-                        <li><a href="https://science.sciencemag.org/content/356/6343" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Science Magazine</a></li>
-                        <li><a href="https://www.nature.com/nature/volumes/574/issues/7779" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Nature Journal</a></li>
-                        <li><a href="https://www.ibm.com/blogs/research/2017/09/quantum-molecule/" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">IBM Research: Quantum Molecule</a></li>
-                        <li><a href="https://phys.org/news/2020-10-ionq-next-generation-quantum.html" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Phys.org: IonQ Next Generation</a></li>
-                        <li><a href="https://arnaldogunzi.medium.com/nisq-era-3b45b71bb11a" target="_blank" rel="noopener noreferrer" class="text-primary-color hover:underline">Medium: NISQ Era</a></li>
-                        <li>...and other links from the presentation.</li>
-                     </ul>
-                 </div>
+                </div>
             </section>
 
+            <!-- 9. Q&A + Quiz / Wrap-up (10 min) -->
+            <section id="qa" class="section-content bg-blue-50 p-6 rounded-xl shadow-md mb-6">
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Your Questions Answered & Let's Stay Curious!</h2>
+                <p class="text-gray-700 mb-4">It's time for a quick knowledge check and then your questions!</p>
+
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-blue-200 mb-4">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Mini Quiz (Conceptual):</h3>
+                    <ul class="list-disc list-inside text-gray-700 pl-4">
+                        <li><strong>What is a qubit?</strong> (A bit that can be 0, 1, or both simultaneously)</li>
+                        <li><strong>Which concept allows quantum computers to explore multiple states in parallel?</strong> (Superposition)</li>
+                        <li><strong>What is the "spooky action at a distance" linking two qubits?</strong> (Entanglement)</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2 italic"> (Imagine this as a fun interactive quiz like Kahoot! or Mentimeter) </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-blue-200 mb-4">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Questions?</h3>
+                    <p class="text-gray-700">Please feel free to ask any questions you have about quantum computing!</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-blue-200">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Resources & Next Steps:</h3>
+                    <ul class="list-disc list-inside text-gray-700 pl-4">
+                        <li><a href="https://quantum-computing.ibm.com/" target="_blank" class="text-blue-600 hover:underline">IBM Quantum Experience</a>: Explore quantum computing hands-on.</li>
+                        <li><a href="https://qiskit.org/textbook/ch-intro/what-is-quantum-computation.html" target="_blank" class="text-blue-600 hover:underline">Qiskit Textbook (Beginner friendly)</a>: A great resource for learning more.</li>
+                        <li><strong>YouTube Channels for Visual Learners:</strong>
+                            <ul class="list-circle list-inside ml-4">
+                                <li>Quantum Country</li>
+                                <li>MinutePhysics</li>
+                                <li>3Blue1Brown (for deeper dives)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <p class="text-center text-lg font-bold text-blue-700 mt-6 p-4 bg-blue-100 rounded-lg border-l-4 border-blue-500">
+                    Just like computers in the 1950s were big and slow, today’s quantum computers are in their infancy. But the future belongs to those who understand the power of qubits early! Thank you!
+                </p>
+            </section>
         </main>
     </div>
-    
-    <!-- Mobile Menu Flyout -->
-    <div id="mobile-menu" class="fixed inset-0 bg-black/50 z-50 hidden lg:hidden">
-        <div class="bg-card-light dark:bg-card-dark w-64 h-full p-4">
-             <button id="close-mobile-menu" class="absolute top-4 right-4 p-2"><i data-lucide="x"></i></button>
-            <h3 class="font-bold text-lg mb-4">Navigation</h3>
-            <nav id="mobile-nav" class="space-y-2">
-                 <!-- Mobile links injected here by JS -->
-            </nav>
-        </div>
-    </div>
-
 
     <script>
-        lucide.createIcons();
-        
-        // --- Navigation ---
-        const sections = document.querySelectorAll('.section-container');
-        const navLinks = [];
-        const desktopNav = document.getElementById('desktop-nav');
-        const mobileNav = document.getElementById('mobile-nav');
-
-        sections.forEach(section => {
-            const id = section.id;
-            const title = section.querySelector('h2').textContent;
-            
-            const link = document.createElement('a');
-            link.href = `#${id}`;
-            link.textContent = title;
-            link.className = 'sidebar-link block w-full text-left p-2 rounded-md';
-            desktopNav.appendChild(link);
-            navLinks.push(link);
-
-            const mobileLink = link.cloneNode(true);
-            mobileLink.addEventListener('click', () => mobileMenu.classList.add('hidden'));
-            mobileNav.appendChild(mobileLink);
-        });
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    document.querySelectorAll('.sidebar-link').forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('href').substring(1) === entry.target.id) {
-                            link.classList.add('active');
-                        }
-                    });
-                }
-            });
-        }, { rootMargin: "-50% 0px -50% 0px" });
-
-        sections.forEach(section => observer.observe(section));
-
-        // --- Mobile Menu ---
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const closeMobileMenuButton = document.getElementById('close-mobile-menu');
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenuButton.addEventListener('click', () => mobileMenu.classList.remove('hidden'));
-        closeMobileMenuButton.addEventListener('click', () => mobileMenu.classList.add('hidden'));
-        mobileMenu.addEventListener('click', (e) => {
-            if (e.target === mobileMenu) mobileMenu.classList.add('hidden');
-        });
-
-        // --- Theme Toggle ---
-        const themeToggle = document.getElementById('theme-toggle');
-        const htmlEl = document.documentElement;
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        if (currentTheme === 'dark') htmlEl.classList.add('dark');
-        themeToggle.addEventListener('click', () => {
-            htmlEl.classList.toggle('dark');
-            localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
-            renderCharts();
-        });
-        
-        // --- Interactive Animations & Charts ---
-        const entanglementDemo = document.getElementById('entanglement-demo');
-        const orbs = entanglementDemo.querySelectorAll('.entangled-orb');
-        let isOrbZero = true;
-        entanglementDemo.addEventListener('click', () => {
-            isOrbZero = !isOrbZero;
-            orbs[0].style.backgroundColor = isOrbZero ? '#4ade80' : '#f87171';
-            orbs[0].dataset.state = isOrbZero ? '|0⟩' : '|1⟩';
-            orbs[1].style.backgroundColor = isOrbZero ? '#f87171' : '#4ade80';
-            orbs[1].dataset.state = isOrbZero ? '|1⟩' : '|0⟩';
-        });
-        orbs[0].style.backgroundColor = '#4ade80'; orbs[1].style.backgroundColor = '#f87171';
-
-        let mooresLawChartInstance, nevensLawChartInstance;
-        function renderCharts() {
-            if (mooresLawChartInstance) mooresLawChartInstance.destroy();
-            if (nevensLawChartInstance) nevensLawChartInstance.destroy();
-            
-            const isDarkMode = htmlEl.classList.contains('dark');
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-            const labelColor = isDarkMode ? '#d1d5db' : '#374151';
-
-            // Moore's Law Chart
-            mooresLawChartInstance = new Chart(document.getElementById('mooresLawChart').getContext('2d'), {
-                type: 'line', data: { labels: ['1971', '1980', '1990', '2000', '2010', '2020'], datasets: [{ label: 'Transistors on a Chip', data: [2300, 29000, 1200000, 42000000, 1300000000, 50000000000], borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.2)', fill: true }] },
-                options: { responsive: true, scales: { y: { type: 'logarithmic', ticks: { color: labelColor }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } }, plugins: { legend: { labels: { color: labelColor } } } }
-            });
-            
-            // Neven's Law Chart
-            nevensLawChartInstance = new Chart(document.getElementById('nevensLawChart').getContext('2d'), {
-                type: 'line', data: { labels: ['2015', '2017', '2019', '2021', '2023'], datasets: [{ label: 'Moore\'s Law', data: [1, 2, 4, 8, 16], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true }, { label: 'Neven\'s Law', data: [1, 10, 1000, 100000, 10000000], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)', fill: true }] },
-                options: { responsive: true, scales: { y: { type: 'logarithmic', ticks: { color: labelColor }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } }, plugins: { legend: { labels: { color: labelColor } } } }
-            });
-        }
-        
         document.addEventListener('DOMContentLoaded', () => {
-            Prism.highlightAll();
-            renderCharts();
+            const navButtons = document.querySelectorAll('.nav-button');
+            const sections = document.querySelectorAll('.section-content');
+            const hadamardOutput = document.getElementById('hadamard-output');
+
+            // Function to show a specific section with animation
+            function showSection(sectionId) {
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                const activeSection = document.getElementById(sectionId);
+                if (activeSection) {
+                    activeSection.classList.add('active');
+                    // Reset animation for fresh effect if needed
+                    activeSection.style.animation = 'none';
+                    void activeSection.offsetWidth; // Trigger reflow
+                    activeSection.style.animation = null;
+                }
+
+                // Update active state for nav buttons
+                navButtons.forEach(button => {
+                    if (button.dataset.section === sectionId) {
+                        button.classList.add('bg-blue-500');
+                        button.classList.remove('bg-gray-700');
+                    } else {
+                        button.classList.remove('bg-blue-500');
+                        button.classList.add('bg-gray-700');
+                    }
+                });
+            }
+
+            // Simulate Hadamard gate measurement
+            window.simulateHadamard = () => {
+                const result = Math.random() < 0.5 ? '0' : '1';
+                hadamardOutput.textContent = result;
+                hadamardOutput.classList.remove('collapse-effect');
+                void hadamardOutput.offsetWidth; // Trigger reflow to restart animation
+                hadamardOutput.classList.add('collapse-effect');
+            };
+
+            // Add click listeners to navigation buttons
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sectionId = button.dataset.section;
+                    showSection(sectionId);
+                });
+            });
+
+            // Initially show the welcome section and set its button active
+            showSection('welcome');
         });
     </script>
 </body>
